@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>I.E. FILIPINAS - Repositorio RED</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --sidebar-bg: #1e293b;
+            --sidebar-hover: #334155;
+            --primary-blue: #2563eb;
+        }
+        body {
+            background-color: #f8fafc;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .sidebar {
+            width: 280px;
+            min-height: 100vh;
+            background-color: var(--sidebar-bg);
+            color: #fff;
+        }
+        .sidebar .nav-link {
+            color: #cbd5e1;
+            padding: 0.8rem 1rem;
+            border-radius: 0.375rem;
+            margin-bottom: 0.2rem;
+            cursor: pointer;
+        }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            color: #fff;
+            background-color: var(--sidebar-hover);
+        }
+        .filter-section {
+            background-color: #0f172a;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+        .card-module {
+            border: none;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease, opacity 0.2s ease;
+        }
+        .card-module:hover {
+            transform: translateY(-2px);
+        }
+        .resource-badge {
+            font-size: 0.75rem;
+            padding: 0.35em 0.65em;
+        }
+        .author-tag {
+            font-size: 0.8rem;
+            background-color: #e2e8f0;
+            color: #334155;
+            padding: 0.2rem 0.5rem;
+            border-radius: 0.25rem;
+        }
+        .view-section {
+            display: none;
+        }
+        .view-section.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header / Banner Simulador -->
+    <div class="bg-dark text-white p-2 text-center text-md-start px-md-4 d-flex flex-column flex-md-row justify-content-between align-items-center">
+        <div>
+            <small class="fw-bold text-warning">PROTOTIPO INSTITUCIONAL</small> 
+            <span class="ms-2 d-none d-md-inline">--- Seleccionar Rol para Simular Permisos:</span>
+        </div>
+        <div class="btn-group btn-group-sm mt-2 mt-md-0" role="group" id="roleSelector">
+            <button class="btn btn-outline-light" data-role="invitado">👤 Invitado</button>
+            <button class="btn btn-outline-light" data-role="estudiante">🎓 Estudiante</button>
+            <button class="btn btn-outline-light" data-role="docente">🧑‍🏫 Docente</button>
+            <button class="btn btn-outline-light" data-role="creador">✍️ Creador</button>
+            <button class="btn btn-outline-light" data-role="evaluador">📋 Evaluador</button>
+            <button class="btn btn-outline-light active" data-role="admin">⚙️ Admin</button>
+        </div>
+    </div>
+
+    <!-- Banner Notificación de Permiso Activo -->
+    <div class="alert alert-info py-2 px-4 rounded-0 m-0 border-0 fs-7 d-flex align-items-center justify-content-between" id="roleNotice">
+        <span><i class="bi bi-info-circle-fill me-2"></i>Rol simulado actualmente: <strong id="currentRoleName">Yair y Carmen</strong> (Acceso total y control de permisos del sistema.)</span>
+    </div>
+
+    <div class="d-flex">
+        <!-- Sidebar Navigation & Filters -->
+        <div class="sidebar p-3 d-flex flex-column flex-shrink-0">
+            <div class="d-flex align-items-center mb-3 text-white text-decoration-none">
+                <i class="bi bi-journal-bookmark-fill fs-3 me-2 text-primary"></i>
+                <div>
+                    <h6 class="m-0 fw-bold">I.E. FILIPINAS</h6>
+                    <small class="text-muted">Repositorio RED | Inglés 7.°</small>
+                </div>
+            </div>
+            <hr class="text-secondary">
+            
+            <!-- Menú Lateral -->
+            <ul class="nav nav-pills flex-column mb-auto" id="sidebarMenu">
+                <li class="nav-item">
+                    <a class="nav-link active" data-target="view-inicio"><i class="bi bi-house-door me-2"></i>Inicio</a>
+                </li>
+                <li>
+                    <a class="nav-link" data-target="view-recursos"><i class="bi bi-folder2-open me-2"></i>Recursos</a>
+                </li>
+                <li>
+                    <a class="nav-link" data-target="view-categorias"><i class="bi bi-tags me-2"></i>Categorías</a>
+                </li>
+                <li class="perm-crear perm-docente perm-admin">
+                    <a class="nav-link" data-target="view-crear"><i class="bi bi-plus-circle me-2"></i>Crear Recurso</a>
+                </li>
+                <li class="perm-crear perm-docente perm-admin">
+                    <a class="nav-link" data-target="view-mis-recursos"><i class="bi bi-folder-symlink me-2"></i>Mis Recursos</a>
+                </li>
+                <li class="perm-evaluador perm-admin">
+                    <a class="nav-link" data-target="view-evaluaciones"><i class="bi bi-check2-square me-2"></i>Evaluaciones RED</a>
+                </li>
+                <li class="perm-docente perm-evaluador perm-admin">
+                    <a class="nav-link" data-target="view-estadisticas"><i class="bi bi-bar-chart me-2"></i>Estadísticas</a>
+                </li>
+                <li class="perm-estudiante perm-docente perm-crear perm-evaluador perm-admin">
+                    <a class="nav-link" data-target="view-perfil"><i class="bi bi-person me-2"></i>Mi Perfil</a>
+                </li>
+            </ul>
+
+            <!-- Sección de Filtros -->
+            <div class="filter-section mt-3">
+                <h6 class="text-uppercase text-light fw-bold mb-3 fs-7">
+                    <i class="bi bi-funnel me-1"></i> Filtrar por:
+                </h6>
+
+                <!-- Tipo de Recurso -->
+                <div class="mb-3">
+                    <label class="form-label text-light fw-semibold mb-1">Tipo de Recurso</label>
+                    <div class="form-check">
+                        <input class="form-check-input filter-check" type="checkbox" value="video" id="video">
+                        <label class="form-check-label text-slate-300" for="video">🎥 Video educativo</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input filter-check" type="checkbox" value="infografia" id="infografia">
+                        <label class="form-check-label text-slate-300" for="infografia">🖼️ Infografía</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input filter-check" type="checkbox" value="interactivo" id="interactivo">
+                        <label class="form-check-label text-slate-300" for="interactivo">🎮 Actividad interactiva</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input filter-check" type="checkbox" value="ova" id="ova">
+                        <label class="form-check-label text-slate-300" for="ova">🖥️ OVA</label>
+                    </div>
+                </div>
+
+                <!-- Área Curricular -->
+                <div>
+                    <label class="form-label text-light fw-semibold mb-1">Área Curricular</label>
+                    <div class="form-check">
+                        <input class="form-check-input area-check" type="checkbox" value="ingles" id="ingles">
+                        <label class="form-check-label text-slate-300" for="ingles">📘 Inglés</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input area-check" type="checkbox" value="matematicas" id="matematicas">
+                        <label class="form-check-label text-slate-300" for="matematicas">📐 Matemáticas</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input area-check" type="checkbox" value="ciencias" id="ciencias">
+                        <label class="form-check-label text-slate-300" for="ciencias">🔬 Ciencias Naturales</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <main class="flex-grow-1 p-4">
+            
+            <!-- Barra Superior de Búsqueda -->
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+                <div class="input-group style-search" style="max-width: 500px;">
+                    <input type="text" id="searchInput" class="form-control" placeholder="Filtrar por título, autor o palabra clave...">
+                    <button class="btn btn-primary" type="button" id="btnSearch"><i class="bi bi-search"></i> Buscar</button>
+                </div>
+                <div class="text-md-end d-flex align-items-center gap-2">
+                    <button class="btn btn-success btn-sm perm-crear perm-docente perm-admin" onclick="switchView('view-crear')">
+                        <i class="bi bi-plus-lg me-1"></i> Nuevo Recurso
+                    </button>
+                    <div>
+                        <small class="text-muted d-block"><strong>Docentes Creadores:</strong></small>
+                        <span class="badge bg-secondary">👨‍🏫 Yair Córdoba</span>
+                        <span class="badge bg-secondary">👩‍🏫 Carmencita Chamí</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VISTA 1: INICIO -->
+            <section id="view-inicio" class="view-section active">
+                <h3 class="fw-bold mb-4">Catálogo General de Recursos RED</h3>
+
+                <div class="row g-4" id="modulesGrid">
+                    <!-- Módulo 1 -->
+                    <div class="col-12 col-md-6 module-card" data-type="video" data-area="ingles">
+                        <div class="card card-module h-100 p-3">
+                            <div class="card-body d-flex flex-column">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="badge bg-primary-subtle text-primary w-auto">Módulo 1</span>
+                                    <span class="author-tag"><i class="bi bi-person-fill me-1"></i>Yair Córdoba & Carmencita Chamí</span>
+                                </div>
+                                <h5 class="card-title fw-bold">A Day in Arauca: Daily Routines</h5>
+                                <p class="text-muted small mb-1"><strong>Tema:</strong> Daily Routines & Time</p>
+                                <p class="text-muted small mb-3"><strong>Interacción:</strong> Opción múltiple en tiempo real (Edpuzzle/H5P).</p>
+
+                                <div class="mt-auto bg-light p-3 rounded border">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="badge bg-danger resource-badge">🎥 Video Educativo</span>
+                                        <small class="text-muted"><i class="bi bi-clock"></i> 8 min</small>
+                                    </div>
+                                    <h6 class="fw-semibold m-0 mb-1">Recurso: Video Interactivo - Daily Routines</h6>
+                                    <p class="text-muted small mb-2">Video guía de rutinas en Arauca con preguntas insertadas.</p>
+                                    
+                                    <div class="d-flex gap-2">
+                                        <button class="btn btn-sm btn-primary flex-grow-1 open-resource-btn" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#resourceModal" 
+                                                data-title="Video Interactivo - Daily Routines" 
+                                                data-type="Video Educativo" 
+                                                data-author="Yair Córdoba y Carmencita Chamí"
+                                                data-desc="Video guía interactivo sobre las rutinas diarias en Arauca con preguntas insertadas tipo Edpuzzle/H5P.">
+                                            <i class="bi bi-play-circle me-1"></i> Abrir Recurso
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-warning perm-evaluador perm-admin" title="Evaluar Recurso" onclick="switchView('view-evaluaciones')">
+                                            <i class="bi bi-star"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-secondary perm-crear perm-admin" title="Editar Recurso" onclick="switchView('view-crear')">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Módulo 2 -->
+                    <div class="col-12 col-md-6 module-card" data-type="infografia" data-area="ingles">
+                        <div class="card card-module h-100 p-3">
+                            <div class="card-body d-flex flex-column">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="badge bg-primary-subtle text-primary w-auto">Módulo 2</span>
+                                    <span class="author-tag"><i class="bi bi-person-fill me-1"></i>Carmencita Chamí</span>
+                                </div>
+                                <h5 class="card-title fw-bold">Culture and Traditions of Arauca</h5>
+                                <p class="text-muted small mb-1"><strong>Tema:</strong> Expressing Likes & Dislikes</p>
+                                <p class="text-muted small mb-3"><strong>Interacción:</strong> Pausas activas y grabación de voz.</p>
+
+                                <div class="mt-auto bg-light p-3 rounded border">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="badge bg-warning text-dark resource-badge">🖼️ Infografía Interactiva</span>
+                                        <small class="text-muted"><i class="bi bi-mic"></i> Audio</small>
+                                    </div>
+                                    <h6 class="fw-semibold m-0 mb-1">Recurso: Infografía de Tradiciones y Comida</h6>
+                                    <p class="text-muted small mb-2">Explora expresiones culturales con modismos y ejercicios de voz.</p>
+
+                                    <div class="d-flex gap-2">
+                                        <button class="btn btn-sm btn-primary flex-grow-1 open-resource-btn" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#resourceModal" 
+                                                data-title="Infografía de Tradiciones y Comida" 
+                                                data-type="Infografía Interactiva" 
+                                                data-author="Carmencita Chamí"
+                                                data-desc="Infografía interactiva sobre las expresiones culturales y gastronómicas de la región con grabaciones de audio incorporadas.">
+                                            <i class="bi bi-eye me-1"></i> Abrir Recurso
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-warning perm-evaluador perm-admin" title="Evaluar Recurso" onclick="switchView('view-evaluaciones')">
+                                            <i class="bi bi-star"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-secondary perm-crear perm-admin" title="Editar Recurso" onclick="switchView('view-crear')">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Módulo 3 -->
+                    <div class="col-12 col-md-6 module-card" data-type="interactivo" data-area="ingles">
+                        <div class="card card-module h-100 p-3">
+                            <div class="card-body d-flex flex-column">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="badge bg-primary-subtle text-primary w-auto">Módulo 3</span>
+                                    <span class="author-tag"><i class="bi bi-person-fill me-1"></i>Yair Córdoba</span>
+                                </div>
+                                <h5 class="card-title fw-bold">Navigating Our Town</h5>
+                                <p class="text-muted small mb-1"><strong>Tema:</strong> Giving Directions & Places</p>
+                                <p class="text-muted small mb-3"><strong>Interacción:</strong> Mapas interactivos desplegables.</p>
+
+                                <div class="mt-auto bg-light p-3 rounded border">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="badge bg-success resource-badge">🎮 Actividad Interactiva</span>
+                                        <small class="text-muted"><i class="bi bi-map"></i> Mapa</small>
+                                    </div>
+                                    <h6 class="fw-semibold m-0 mb-1">Recurso: Simulador de Direcciones en Arauca</h6>
+                                    <p class="text-muted small mb-2">Navega por la ciudad respondiendo indicaciones en inglés.</p>
+
+                                    <div class="d-flex gap-2">
+                                        <button class="btn btn-sm btn-primary flex-grow-1 open-resource-btn" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#resourceModal" 
+                                                data-title="Simulador de Direcciones en Arauca" 
+                                                data-type="Actividad Interactiva" 
+                                                data-author="Yair Córdoba"
+                                                data-desc="Simulador interactivo donde el estudiante practica cómo dar y recibir indicaciones en inglés usando el mapa del municipio.">
+                                            <i class="bi bi-controller me-1"></i> Abrir Recurso
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-warning perm-evaluador perm-admin" title="Evaluar Recurso" onclick="switchView('view-evaluaciones')">
+                                            <i class="bi bi-star"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-secondary perm-crear perm-admin" title="Editar Recurso" onclick="switchView('view-crear')">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Módulo 4 -->
+                    <div class="col-12 col-md-6 module-card" data-type="ova" data-area="ingles">
+                        <div class="card card-module h-100 p-3">
+                            <div class="card-body d-flex flex-column">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="badge bg-primary-subtle text-primary w-auto">Módulo 4</span>
+                                    <span class="author-tag"><i class="bi bi-person-fill me-1"></i>Yair Córdoba & Carmencita Chamí</span>
+                                </div>
+                                <h5 class="card-title fw-bold">Weather and Nature in Orinoquia</h5>
+                                <p class="text-muted small mb-1"><strong>Tema:</strong> Present Continuous & Weather</p>
+                                <p class="text-muted small mb-3"><strong>Interacción:</strong> Completar espacios (Fill in the blanks).</p>
+
+                                <div class="mt-auto bg-light p-3 rounded border">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="badge bg-info text-dark resource-badge">🖥️ OVA Integrado</span>
+                                        <small class="text-muted"><i class="bi bi-file-earmark-text"></i> H5P</small>
+                                    </div>
+                                    <h6 class="fw-semibold m-0 mb-1">Recurso: Guía Interactiva del Clima</h6>
+                                    <p class="text-muted small mb-2">Actividad interactiva para completar oraciones sobre el clima.</p>
+
+                                    <div class="d-flex gap-2">
+                                        <button class="btn btn-sm btn-primary flex-grow-1 open-resource-btn" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#resourceModal" 
+                                                data-title="Guía Interactiva del Clima" 
+                                                data-type="OVA Integrado" 
+                                                data-author="Yair Córdoba y Carmencita Chamí"
+                                                data-desc="Objeto Virtual de Aprendizaje (OVA) con ejercicios tipo H5P para ejercitar el Present Continuous enfocado en el clima de la Orinoquía.">
+                                            <i class="bi bi-journal-check me-1"></i> Abrir Recurso
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-warning perm-evaluador perm-admin" title="Evaluar Recurso" onclick="switchView('view-evaluaciones')">
+                                            <i class="bi bi-star"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-secondary perm-crear perm-admin" title="Editar Recurso" onclick="switchView('view-crear')">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- VISTA 2: RECURSOS -->
+            <section id="view-recursos" class="view-section">
+                <h3 class="fw-bold mb-3"><i class="bi bi-folder2-open me-2"></i>Gestión General de Recursos</h3>
+                <p class="text-muted">Explora todos los contenidos educativos subidos a la plataforma por área curricular.</p>
+                <div class="list-group shadow-sm">
+                    <div class="list-group-item d-flex justify-content-between align-items-center p-3">
+                        <div>
+                            <h6 class="mb-0 fw-bold">Unidad 1: Rutinas y Entorno</h6>
+                            <small class="text-muted">4 Recursos Disponibles • Inglés Grade 7</small>
+                        </div>
+                        <button class="btn btn-outline-primary btn-sm" onclick="switchView('view-inicio')">Ver Módulos</button>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center p-3">
+                        <div>
+                            <h6 class="mb-0 fw-bold">Unidad 2: Cultura Local y Gastronomía</h6>
+                            <small class="text-muted">3 Recursos Disponibles • Inglés Grade 7</small>
+                        </div>
+                        <button class="btn btn-outline-primary btn-sm" onclick="switchView('view-inicio')">Ver Módulos</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- VISTA 3: CATEGORÍAS -->
+            <section id="view-categorias" class="view-section">
+                <h3 class="fw-bold mb-4"><i class="bi bi-tags me-2"></i>Categorías Curriculares</h3>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="card p-3 border-start border-4 border-primary">
+                            <h5>📘 Inglés</h5>
+                            <p class="small text-muted mb-2">Comprensión lectora, gramática y expresión oral.</p>
+                            <span class="badge bg-primary w-auto">4 Módulos Activos</span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card p-3 border-start border-4 border-success">
+                            <h5>📐 Matemáticas</h5>
+                            <p class="small text-muted mb-2">Razonamiento cuantitativo y resolución de problemas.</p>
+                            <span class="badge bg-secondary w-auto">Próximamente</span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card p-3 border-start border-4 border-info">
+                            <h5>🔬 Ciencias Naturales</h5>
+                            <p class="small text-muted mb-2">Ecosistemas de la Orinoquía y biodiversidad.</p>
+                            <span class="badge bg-secondary w-auto">Próximamente</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- VISTA 4: CREAR RECURSO -->
+            <section id="view-crear" class="view-section">
+                <h3 class="fw-bold mb-3"><i class="bi bi-plus-circle me-2"></i>Crear Nuevo Recurso Educativo (RED)</h3>
+                <div class="card p-4 shadow-sm" style="max-width: 700px;">
+                    <form onsubmit="event.preventDefault(); alert('¡Recurso guardado con éxito!'); switchView('view-inicio');">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Título del Recurso</label>
+                            <input type="text" class="form-control" placeholder="Ej: Vocabulary in Arauca" required>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Tipo de Recurso</label>
+                                <select class="form-select">
+                                    <option>Video Educativo</option>
+                                    <option>Infografía Interactiva</option>
+                                    <option>Actividad Interactiva</option>
+                                    <option>OVA Integrado</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Área Curricular</label>
+                                <select class="form-select">
+                                    <option>Inglés</option>
+                                    <option>Matemáticas</option>
+                                    <option>Ciencias Naturales</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Descripción / Instrucciones</label>
+                            <textarea class="form-control" rows="3" placeholder="Describe brevemente el objetivo del contenido..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i> Publicar Recurso</button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- VISTA 5: MIS RECURSOS -->
+            <section id="view-mis-recursos" class="view-section">
+                <h3 class="fw-bold mb-3"><i class="bi bi-folder-symlink me-2"></i>Mis Recursos Creados</h3>
+                <div class="card p-3 shadow-sm">
+                    <p class="text-muted">Lista de contenidos creados por tu usuario en esta sesión de simulación.</p>
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Título</th>
+                                <th>Tipo</th>
+                                <th>Fecha</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>A Day in Arauca: Daily Routines</td>
+                                <td><span class="badge bg-danger">Video</span></td>
+                                <td>12 Sep 2026</td>
+                                <td><span class="badge bg-success">Publicado</span></td>
+                            </tr>
+                            <tr>
+                                <td>Weather and Nature in Orinoquia</td>
+                                <td><span class="badge bg-info text-dark">OVA</span></td>
+                                <td>10 Sep 2026</td>
+                                <td><span class="badge bg-success">Publicado</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- VISTA 6: EVALUACIONES RED -->
+            <section id="view-evaluaciones" class="view-section">
+                <h3 class="fw-bold mb-3"><i class="bi bi-check2-square me-2"></i>Evaluación de Calidad LORI / CODA</h3>
+                <div class="card p-4 shadow-sm" style="max-width: 600px;">
+                    <h5 class="fw-bold mb-3">Rúbrica de Evaluación RED</h5>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">1. Calidad del Contenido</label>
+                        <select class="form-select"><option>5 - Excelente</option><option>4 - Bueno</option></select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">2. Reusabilidad y Accesibilidad</label>
+                        <select class="form-select"><option>5 - Excelente</option><option>4 - Bueno</option></select>
+                    </div>
+                    <button class="btn btn-warning text-dark" onclick="alert('Evaluación guardada en el expediente del módulo.'); switchView('view-inicio');">
+                        <i class="bi bi-star-fill me-1"></i> Guardar Evaluación
+                    </button>
+                </div>
+            </section>
+
+            <!-- VISTA 7: ESTADÍSTICAS -->
+            <section id="view-estadisticas" class="view-section">
+                <h3 class="fw-bold mb-4"><i class="bi bi-bar-chart me-2"></i>Estadísticas de Uso del Repositorio</h3>
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <div class="card p-3 text-center bg-primary text-white">
+                            <h2>142</h2>
+                            <small>Visualizaciones Totales</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card p-3 text-center bg-success text-white">
+                            <h2>38</h2>
+                            <small>Descargas de Materiales</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card p-3 text-center bg-warning text-dark">
+                            <h2>4.8 / 5</h2>
+                            <small>Calificación Promedio RED</small>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- VISTA 8: MI PERFIL -->
+            <section id="view-perfil" class="view-section">
+                <h3 class="fw-bold mb-3"><i class="bi bi-person me-2"></i>Perfil de Usuario</h3>
+                <div class="card p-4 shadow-sm" style="max-width: 500px;">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <i class="bi bi-person-circle display-4 text-primary"></i>
+                        <div>
+                            <h5 class="m-0 fw-bold" id="profileName">Usuario Institucional</h5>
+                            <small class="text-muted" id="profileRole">Rol: Yair y Carmen</small>
+                        </div>
+                    </div>
+                    <p class="small text-muted mb-0">Institución Educativa Filipinas — Arauquita, Arauca.</p>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Modal Interactivo -->
+    <div class="modal fade" id="resourceModal" tabindex="-1" aria-labelledby="resourceModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold" id="resourceModalLabel"><i class="bi bi-play-btn me-2"></i>Reproductor de Recurso RED</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="alert alert-success d-flex align-items-center mb-3">
+                        <i class="bi bi-check-circle-fill me-2 fs-5"></i>
+                        <div><strong>¡Recurso cargado con éxito!</strong> El contenido H5P / OVA está listo para su uso.</div>
+                    </div>
+                    <div class="p-4 bg-light rounded border border-2 text-center">
+                        <i class="bi bi-file-earmark-play display-4 text-primary mb-3"></i>
+                        <h4 id="modalResourceTitle" class="fw-bold mb-2"></h4>
+                        <span class="badge bg-info text-dark mb-2" id="modalResourceType"></span>
+                        <p class="small text-muted mb-2" id="modalResourceAuthor"></p>
+                        <p class="text-secondary small bg-white p-3 rounded border" id="modalResourceDesc"></p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-success perm-estudiante perm-docente perm-crear perm-evaluador perm-admin" onclick="alert('Iniciando descarga del paquete interactivo (ZIP / SCORM)...');">
+                        <i class="bi bi-download me-1"></i> Descargar Material (.ZIP / SCORM)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const roleDetails = {
+                'invitado': { name: 'comunidad educativa', desc: 'Acceso de solo lectura al catálogo general.' },
+                'estudiante': { name: 'estudiantes', desc: 'Permiso para consultar recursos y descargar materiales.' },
+                'docente': { name: 'cuerpo docente', desc: 'Permiso para consultar, crear recursos y ver estadísticas.' },
+                'creador': { name: 'Yair y Carmen', desc: 'Permiso para diseñar, publicar y editar sus propios recursos.' },
+                'evaluador': { name: 'comité evaluador', desc: 'Permiso para realizar rúbricas de evaluación y revisar calidad de contenidos.' },
+                'admin': { name: 'Yair y Carmen', desc: 'Acceso total y control de permisos del sistema.' }
+            };
+
+            window.switchView = function(targetId) {
+                document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
+                const targetSec = document.getElementById(targetId);
+                if (targetSec) {
+                    targetSec.classList.add('active');
+                }
+
+                document.querySelectorAll('#sidebarMenu .nav-link').forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('data-target') === targetId) {
+                        link.classList.add('active');
+                    }
+                });
+            };
+
+            document.querySelectorAll('#sidebarMenu .nav-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const target = this.getAttribute('data-target');
+                    if (target) switchView(target);
+                });
+            });
+
+            function applyRole(role) {
+                document.querySelectorAll('#roleSelector button').forEach(b => {
+                    b.classList.remove('active');
+                    if (b.getAttribute('data-role') === role) {
+                        b.classList.add('active');
+                    }
+                });
+
+                const details = roleDetails[role] || roleDetails['admin'];
+                document.getElementById('currentRoleName').textContent = details.name;
+                document.getElementById('roleNotice').querySelector('span').innerHTML = 
+                    `<i class="bi bi-info-circle-fill me-2"></i>Rol simulado actualmente: <strong>${details.name}</strong> (${details.desc})`;
+
+                document.getElementById('profileRole').textContent = 'Rol: ' + details.name;
+
+                const allPermElements = document.querySelectorAll('[class*="perm-"]');
+                allPermElements.forEach(el => {
+                    if (el.classList.contains(`perm-${role}`)) {
+                        el.classList.remove('d-none');
+                    } else {
+                        el.classList.add('d-none');
+                    }
+                });
+            }
+
+            document.querySelectorAll('#roleSelector button').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const selectedRole = this.getAttribute('data-role');
+                    applyRole(selectedRole);
+                });
+            });
+
+            const filterChecks = document.querySelectorAll('.filter-check');
+            const areaChecks = document.querySelectorAll('.area-check');
+            const searchInput = document.getElementById('searchInput');
+            const cards = document.querySelectorAll('.module-card');
+
+            function filterResources() {
+                const activeTypes = Array.from(filterChecks).filter(c => c.checked).map(c => c.value);
+                const activeAreas = Array.from(areaChecks).filter(c => c.checked).map(c => c.value);
+                const searchText = searchInput.value.toLowerCase().trim();
+
+                cards.forEach(card => {
+                    const cardType = card.getAttribute('data-type');
+                    const cardArea = card.getAttribute('data-area');
+                    const cardText = card.innerText.toLowerCase();
+
+                    const matchesType = activeTypes.length === 0 || activeTypes.includes(cardType);
+                    const matchesArea = activeAreas.length === 0 || activeAreas.includes(cardArea);
+                    const matchesSearch = searchText === '' || cardText.includes(searchText);
+
+                    if (matchesType && matchesArea && matchesSearch) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            }
+
+            filterChecks.forEach(c => c.addEventListener('change', filterResources));
+            areaChecks.forEach(c => c.addEventListener('change', filterResources));
+            searchInput.addEventListener('input', filterResources);
+
+            const resourceModal = document.getElementById('resourceModal');
+            if (resourceModal) {
+                resourceModal.addEventListener('show.bs.modal', event => {
+                    const button = event.relatedTarget;
+                    if (!button) return;
+                    
+                    document.getElementById('modalResourceTitle').textContent = button.getAttribute('data-title') || 'Recurso RED';
+                    document.getElementById('modalResourceType').textContent = 'Categoría: ' + (button.getAttribute('data-type') || 'RED');
+                    document.getElementById('modalResourceAuthor').textContent = 'Docente(s) Creador(es): ' + (button.getAttribute('data-author') || 'Autor');
+                    document.getElementById('modalResourceDesc').textContent = button.getAttribute('data-desc') || 'Descripción del recurso.';
+                });
+            }
+
+            applyRole('admin');
+        });
+    </script>
+</body>
+</html>
